@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+build/
+dist/
+.pytest_cache/
+
+# Virtual envs
+venv/
+.venv/
+env/
+ENV/
+
+# Secrets / env
+.env
+.env.local
+*.local.env
+
+# Data / cache
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+!fmes/universes/*.csv
+.cache/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
