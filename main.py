@@ -14,6 +14,14 @@ import json
 import sys
 from pathlib import Path
 
+# Force UTF-8 stdout/stderr so emoji and box-drawing chars don't crash on Windows cp1252
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 from fmes.config import CONFIG
 from fmes.scanner import scan_default
 from fmes.telegram_bot import format_setups, send_telegram
@@ -22,7 +30,7 @@ from fmes.universes import resolve_universes
 
 def main() -> int:
     print("=" * 70)
-    print("FMES Scanner — daily run")
+    print("FMES Scanner -- daily run")
     print("=" * 70)
     print(f"Universes:    {', '.join(CONFIG.universes)}")
     print(f"Timeframe:    {CONFIG.yfinance_interval} (period={CONFIG.yfinance_period})")
@@ -53,11 +61,11 @@ def main() -> int:
         timeframe=timeframe_label,
     )
 
-    print("\n" + "─" * 70)
+    print("\n" + "-" * 70)
     print("Message preview:")
-    print("─" * 70)
+    print("-" * 70)
     print(message)
-    print("─" * 70)
+    print("-" * 70)
 
     # Save snapshot to disk (handy for the web dashboard later)
     out_dir = Path("data")
