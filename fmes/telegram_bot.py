@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Iterable
+from typing import Iterable, Optional
 
 import requests
 
@@ -39,6 +39,7 @@ def format_setups(
     failed_count: int = 0,
     universe_size: int = 0,
     timeframe: str = "Daily",
+    win_rate_30d: Optional[dict] = None,
 ) -> str:
     """Build the Telegram message body."""
     from datetime import datetime
@@ -46,6 +47,17 @@ def format_setups(
     now = datetime.now().strftime("%Y-%m-%d %H:%M %Z").strip()
     header = f"📊 *FMES Daily Scan — {timeframe} — {now}*\n"
     header += f"_Scanned: {universe_size} symbols   |   Setups: {len(setups)}   |   Failed: {failed_count}_\n"
+
+    # 30-day win rate stat
+    if win_rate_30d and win_rate_30d.get("total_closed", 0) > 0:
+        wr = win_rate_30d.get("win_rate_pct")
+        wins = win_rate_30d.get("wins", 0)
+        losses = win_rate_30d.get("losses", 0)
+        exp_r = win_rate_30d.get("expectancy_r")
+        header += (
+            f"_30d perf: {wins}W / {losses}L = *{wr}%* win rate"
+            f"   |   Expectancy: *{exp_r}R*/trade_\n"
+        )
 
     if not setups:
         return header + "\n_No fresh setups today._"

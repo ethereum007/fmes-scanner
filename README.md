@@ -1,6 +1,12 @@
 # FMES Scanner
 
-Python port of the [FMES Trade Setup Detector](https://github.com/ethereum007/fmes-trade-setup-detector) Pine indicator. Scans hundreds of stocks daily, detects fresh PSH/PSL setups using the FMES 5+1 criteria, and pushes a clean actionable list to Telegram.
+Python port of the [FMES Trade Setup Detector](https://github.com/ethereum007/fmes-trade-setup-detector) Pine indicator. Scans hundreds of stocks daily, detects fresh PSH/PSL setups using the FMES 5+1 criteria, persists to Supabase, pushes a clean actionable list to Telegram, and renders a live web dashboard.
+
+## Phases
+
+- **Phase 1**: Python scanner + Telegram bot (✅ live)
+- **Phase 2**: Supabase persistence + 30-day win-rate tracking (✅ live)
+- **Phase 3**: Next.js dashboard at fmes.alphabullacademy.com (✅ live — see [`dashboard/`](dashboard/))
 
 ## What it does
 
@@ -86,16 +92,38 @@ fmes-scanner/
 ├── README.md
 ├── requirements.txt
 ├── .env.example
-├── main.py                    # Entry point
+├── main.py                            # Entry point
 ├── fmes/
-│   ├── __init__.py
-│   ├── config.py              # Env var → settings
-│   ├── universes.py           # Nifty 500 + other ticker lists
-│   ├── detector.py            # Core FMES detection (port of Pine v4)
-│   ├── scanner.py             # Concurrent universe scan
-│   └── telegram_bot.py        # Message formatting + delivery
-└── .github/workflows/daily-scan.yml   # Cron schedule
+│   ├── config.py                      # Env var → settings
+│   ├── universes.py                   # Nifty 500 + other ticker lists
+│   ├── detector.py                    # Core FMES detection (port of Pine v4)
+│   ├── scanner.py                     # Concurrent universe scan
+│   ├── db.py                          # Supabase persistence
+│   └── telegram_bot.py                # Message formatting + delivery
+├── supabase/
+│   └── schema.sql                     # DB schema (run once in Supabase)
+├── dashboard/                         # Next.js 14 web dashboard
+│   ├── app/                           #   App Router + RSC
+│   ├── components/                    #   Setup table, stats header
+│   └── lib/                           #   Supabase client, utils
+└── .github/workflows/daily-scan.yml   # Daily cron (4pm IST weekdays)
 ```
+
+## Supabase setup (Phase 2)
+
+1. Create a project at https://supabase.com (free tier is plenty)
+2. In **SQL Editor**, paste & run [`supabase/schema.sql`](supabase/schema.sql)
+3. In **Settings → API**, grab:
+   - `Project URL` → `SUPABASE_URL`
+   - `service_role` key → `SUPABASE_SERVICE_KEY` (used by Python scanner — full write access)
+   - `anon` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY` (used by dashboard — read-only via RLS)
+4. Add `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` to GitHub repo secrets (Settings → Secrets and variables → Actions)
+
+After that, every scan persists to the `scans` and `setups` tables. The Telegram message gains a `30d perf: XW / YL = Z%` line.
+
+## Dashboard setup (Phase 3)
+
+See [`dashboard/README.md`](dashboard/README.md) for Vercel deploy + custom-domain instructions.
 
 ## Extending
 

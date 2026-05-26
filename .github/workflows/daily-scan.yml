@@ -28,12 +28,15 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           FMES_TIMEFRAME:     "1d"
           FMES_UNIVERSES:     "nifty500,forex,us_majors"
           FMES_PIVOT_LEN:     "7"
           FMES_REQUIRE_HTF_TREND: "true"
           FMES_REQUIRE_LQ_PLUS:   "true"
           FMES_MAX_SETUP_AGE_BARS: "10"
+          PYTHONIOENCODING:   "utf-8"
         run: python main.py
 
       - name: Upload scan snapshot

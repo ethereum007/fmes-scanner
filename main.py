@@ -23,6 +23,7 @@ if sys.platform == "win32":
         pass
 
 from fmes.config import CONFIG
+from fmes.db import get_win_rate_30d, insert_scan, upsert_setups
 from fmes.scanner import scan_default
 from fmes.telegram_bot import format_setups, send_telegram
 from fmes.universes import resolve_universes
@@ -45,6 +46,24 @@ def main() -> int:
 
     setups, failed = scan_default()
 
+    # Persist to Supabase (silent no-op if SUPABASE_URL/KEY missing)
+    scan_id = insert_scan(
+        universe_size=universe_size,
+        setups_found=len(setups),
+        failed_count=len(failed),
+        timeframe=CONFIG.yfinance_interval,
+        universes=list(CONFIG.universes),
+        metadata={"pivot_len": CONFIG.pivot_len, "require_lq_plus": CONFIG.require_lq_plus},
+    )
+    if scan_id is not None:
+        rows = upsert_setups(setups, scan_id)
+        print(f"\n[db] Persisted scan #{scan_id} with {rows} setup rows.")
+    else:
+        print("\n[db] Skipping DB persistence (no SUPABASE_URL/KEY).")
+
+    # Fetch 30-day win rate (None if DB not connected)
+    win_rate_30d = get_win_rate_30d()
+
     # Build Telegram message
     timeframe_label = {
         "1d": "Daily",
@@ -59,6 +78,7 @@ def main() -> int:
         failed_count=len(failed),
         universe_size=universe_size,
         timeframe=timeframe_label,
+        win_rate_30d=win_rate_30d,
     )
 
     print("\n" + "-" * 70)
